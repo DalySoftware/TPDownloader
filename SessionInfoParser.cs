@@ -2,37 +2,41 @@ using YamlDotNet.RepresentationModel;
 
 internal static class SessionInfoParser
 {
-    internal static List<int> ExtractDriverUserIds(string yaml)
+    internal static IEnumerable<CarPaintId> GetRequiredDownloads(string yaml)
     {
         var yamlStream = new YamlStream();
         using var reader = new StringReader(yaml);
         yamlStream.Load(reader);
 
-        if (yamlStream.Documents[0].RootNode is not YamlMappingNode root)
-            return [];
-
-        if (!root.Children.TryGetValue("DriverInfo", out var driverInfoNode))
-            return [];
-
-        if (driverInfoNode is not YamlMappingNode driverInfo)
-            return [];
-
-        if (!driverInfo.Children.TryGetValue("Drivers", out var driversNode))
-            return [];
-
-        if (driversNode is not YamlSequenceNode drivers)
-            return [];
-
+        var drivers = GetDrivers(yamlStream);
         return drivers
+            .Select(d => d)
             .OfType<YamlMappingNode>()
-            .Select(driver =>
-                driver.Children.TryGetValue("UserID", out var userIdNode)
-                && int.TryParse(userIdNode.ToString(), out int userId)
-                    ? userId
-                    : (int?)null
-            )
-            .Select(id => id)
-            .OfType<int>()
-            .ToList();
+            .Select(ToCarPaintDownload)
+            .OfType<CarPaintId>()
+            .Where(download => download.UserId > 0);
     }
+
+    private static IEnumerable<YamlNode> GetDrivers(YamlStream yamlStream)
+    {
+        if (
+            yamlStream.Documents[0].RootNode is not YamlMappingNode root
+            || !root.Children.TryGetValue("DriverInfo", out var driverInfoNode)
+            || driverInfoNode is not YamlMappingNode driverInfo
+            || !driverInfo.Children.TryGetValue("Drivers", out var driversNode)
+            || driversNode is not YamlSequenceNode drivers
+        )
+        {
+            return [];
+        }
+
+        return drivers;
+    }
+
+    private static CarPaintId? ToCarPaintDownload(YamlMappingNode driver) =>
+        driver.Children.TryGetValue("UserID", out var userIdNode)
+        && int.TryParse(userIdNode.ToString(), out int userId)
+        && driver.Children.TryGetValue("CarPath", out var carPathNode)
+            ? new CarPaintId(userId, carPathNode.ToString())
+            : null;
 }

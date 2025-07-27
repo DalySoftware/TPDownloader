@@ -5,4 +5,6 @@ internal static class Directories
         "iRacing",
         "paint"
     );
+
+    internal static readonly string Temp = Path.Combine(Path.GetTempPath(), "TPDownloader");
 }

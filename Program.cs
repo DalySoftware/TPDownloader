@@ -18,8 +18,8 @@ async Task Loop()
         {
             Console.WriteLine("Connected!");
             var session = sdk.GetSessionInfo();
-            var userIds = SessionInfoParser.ExtractDriverUserIds(session);
-            Console.WriteLine($"Driver User IDs: {string.Join(", ", userIds)}");
+            var downloads = SessionInfoParser.GetRequiredDownloads(session);
+            Console.WriteLine($"To download: {string.Join(", ", downloads)}");
             return;
         }
 
