@@ -1,29 +1,32 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using irsdkSharp;
 
-Console.WriteLine("Hello, World!");
-
 var sdk = new IRacingSDK();
+await Loop(sdk);
 
-await Loop();
-
-async Task Loop()
+static async Task Loop(IRacingSDK sdk)
 {
     while (true)
     {
-        var currentlyConnected = sdk.IsConnected();
-
-        // Check if we can find the sim
-        if (currentlyConnected)
+        if (!sdk.IsConnected())
         {
-            Console.WriteLine("Connected!");
-            var session = sdk.GetSessionInfo();
-            var downloads = SessionInfoParser.GetRequiredDownloads(session);
-            Console.WriteLine($"To download: {string.Join(", ", downloads)}");
+            Console.WriteLine("...waiting to connect");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            continue;
+        }
+
+        Console.WriteLine("Connected!");
+        var session = sdk.GetSessionInfo();
+        var downloads = SessionInfoParser.GetRequiredDownloads(session);
+        if (downloads == null)
+        {
+            Console.WriteLine("Nothing to download.");
             return;
         }
 
-        Console.WriteLine("...waiting to connect");
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        Console.WriteLine(
+            $"Session: {downloads.SessionId} needs downloads: {string.Join(',', downloads.Paints)}"
+        );
+        return;
     }
 }

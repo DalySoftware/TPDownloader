@@ -2,22 +2,49 @@ using YamlDotNet.RepresentationModel;
 
 internal static class SessionInfoParser
 {
-    internal static IEnumerable<CarPaintId> GetRequiredDownloads(string yaml)
+    internal static SessionDownload? GetRequiredDownloads(string yaml)
     {
         var yamlStream = new YamlStream();
         using var reader = new StringReader(yaml);
         yamlStream.Load(reader);
 
-        var drivers = GetDrivers(yamlStream);
-        return drivers
-            .Select(d => d)
+        var sessionId = GetSessionId(yamlStream);
+        if (sessionId == null)
+            return null;
+
+        var paints = GetDrivers(yamlStream)
             .OfType<YamlMappingNode>()
             .Select(ToCarPaintDownload)
             .OfType<CarPaintId>()
-            .Where(download => download.UserId > 0);
+            .Where(download => download.UserId > 0)
+            .ToHashSet();
+
+        return new SessionDownload(sessionId, paints);
     }
 
-    private static IEnumerable<YamlNode> GetDrivers(YamlStream yamlStream)
+    private static SessionId? GetSessionId(YamlStream yamlStream)
+    {
+        if (
+            yamlStream.Documents[0].RootNode is not YamlMappingNode root
+            || !root.Children.TryGetValue("WeekendInfo", out var weekendInfoNode)
+            || weekendInfoNode is not YamlMappingNode weekendInfo
+            || !weekendInfo.Children.TryGetValue("SessionID", out var sessionIdNode)
+            || !int.TryParse(sessionIdNode.ToString(), out int mainSessionId)
+        )
+        {
+            return null;
+        }
+
+        int? subSessionId =
+            weekendInfo.Children.TryGetValue("SubSessionID", out var subSessionIdNode)
+            && int.TryParse(subSessionIdNode.ToString(), out int parsedSubSessionId)
+                ? parsedSubSessionId
+                : null;
+
+        return new SessionId(mainSessionId, subSessionId);
+    }
+
+    private static YamlSequenceNode GetDrivers(YamlStream yamlStream)
     {
         if (
             yamlStream.Documents[0].RootNode is not YamlMappingNode root
@@ -29,7 +56,6 @@ internal static class SessionInfoParser
         {
             return [];
         }
-
         return drivers;
     }
 
