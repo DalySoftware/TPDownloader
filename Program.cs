@@ -1,10 +1,25 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Downloading;
 using irsdkSharp;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-var sdk = new IRacingSDK();
-await Loop(sdk);
+var host = Host.CreateDefaultBuilder()
+    .ConfigureServices(
+        (_, services) =>
+        {
+            services.AddHttpClient<TradingPaintsFetcherFactory>();
+            services.AddHttpClient<SessionDownloader>();
+            services.AddSingleton<IRacingSDK>();
+        }
+    )
+    .Build();
 
-static async Task Loop(IRacingSDK sdk)
+var sdk = host.Services.GetRequiredService<IRacingSDK>();
+var downloader = host.Services.GetRequiredService<SessionDownloader>();
+await Loop(sdk, downloader);
+
+static async Task Loop(IRacingSDK sdk, SessionDownloader downloader)
 {
     while (true)
     {
@@ -25,8 +40,9 @@ static async Task Loop(IRacingSDK sdk)
         }
 
         Console.WriteLine(
-            $"Session: {downloads.SessionId} needs downloads: {string.Join(',', downloads.Paints)}"
+            $"Session: {downloads.SessionId} needs downloads: {string.Join(',', downloads.PaintIds)}"
         );
+        await downloader.DownloadAndSavePaints(downloads);
         return;
     }
 }

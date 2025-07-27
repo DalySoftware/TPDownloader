@@ -1,5 +1,15 @@
 internal record SessionId(int MainSessionId, int? SubSessionId);
 
-internal record CarPaintId(int UserId, string CarPath);
+internal record DownloadId(int UserId, string Directory, PaintType Type);
 
-internal record SessionDownload(SessionId SessionId, HashSet<CarPaintId> Paints);
+internal enum PaintType
+{
+    Car,
+    CarDecal,
+    CarNumber,
+    CarSpecMap,
+    Helmet,
+    Suit,
+}
+
+internal record SessionDownload(SessionId SessionId, HashSet<DownloadId> PaintIds);

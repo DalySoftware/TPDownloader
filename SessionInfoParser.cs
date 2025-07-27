@@ -15,7 +15,7 @@ internal static class SessionInfoParser
         var paints = GetDrivers(yamlStream)
             .OfType<YamlMappingNode>()
             .Select(ToCarPaintDownload)
-            .OfType<CarPaintId>()
+            .OfType<DownloadId>()
             .Where(download => download.UserId > 0)
             .ToHashSet();
 
@@ -59,10 +59,10 @@ internal static class SessionInfoParser
         return drivers;
     }
 
-    private static CarPaintId? ToCarPaintDownload(YamlMappingNode driver) =>
+    private static DownloadId? ToCarPaintDownload(YamlMappingNode driver) =>
         driver.Children.TryGetValue("UserID", out var userIdNode)
         && int.TryParse(userIdNode.ToString(), out int userId)
         && driver.Children.TryGetValue("CarPath", out var carPathNode)
-            ? new CarPaintId(userId, carPathNode.ToString())
+            ? new DownloadId(userId, carPathNode.ToString(), PaintType.Car)
             : null;
 }
