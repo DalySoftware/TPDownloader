@@ -8,96 +8,70 @@ internal class SessionDownloader(
     TradingPaintsFetcherFactory fetcherFactory
 )
 {
-    internal async Task<IEnumerable<DownloadedFile>> DownloadSession(
-        SessionDownload sessionDownload
-    )
+    internal async Task<IEnumerable<DownloadedFile>> DownloadSession(Session session)
     {
-        if (sessionDownload.PaintIds.Count == 0)
-        {
-            logger.LogInformation(
-                "No paints to download for session {SessionId}.",
-                sessionDownload.SessionId
-            );
-            return [];
-        }
+        logger.LogInformation("Starting download for {SessionId}", session.Id);
 
-        logger.LogInformation(
-            "Starting download for session {SessionId} with {PaintCount} paints.",
-            sessionDownload.SessionId,
-            sessionDownload.PaintIds.Count
-        );
-
-        return await DownloadPaints(sessionDownload);
+        return await DownloadPaints(session);
     }
 
-    private async Task<IEnumerable<DownloadedFile>> DownloadPaints(SessionDownload sessionDownload)
+    private async Task<IEnumerable<DownloadedFile>> DownloadPaints(Session session)
     {
-        if (sessionDownload.PaintIds.Count == 0)
-        {
-            logger.LogInformation(
-                "No paints to download for session {SessionId}.",
-                sessionDownload.SessionId
-            );
-            return [];
-        }
-
-        if (Directory.Exists(sessionDownload.SessionId.SessionFolder()))
+        if (Directory.Exists(session.Id.SessionFolder()))
         {
             logger.LogInformation(
                 "Session folder {SessionFolder} already exists. Removing existing files.",
-                sessionDownload.SessionId.SessionFolder()
+                session.Id.SessionFolder()
             );
-            Directory.Delete(sessionDownload.SessionId.SessionFolder(), true);
+            Directory.Delete(session.Id.SessionFolder(), true);
         }
 
         var downloadedFiles = new List<DownloadedFile>();
 
-        // Group paints by user to avoid multiple API calls for the same user
-        var paintsByUser = sessionDownload.PaintIds.GroupBy(p => p.UserId);
-
-        foreach (var userPaints in paintsByUser)
+        foreach (var user in session.Users)
         {
-            var userId = userPaints.Key;
-            var userFiles = (await fetcherFactory.Create(userId).FetchPaintFilesAsync()).ToList();
+            var userId = user.UserId;
+            var allUserFiles = await fetcherFactory.Create(userId).FetchPaintFilesAsync();
 
-            foreach (var paint in userPaints)
-            {
-                var downloadPath = paint.DownloadPath(sessionDownload.SessionId);
-                Directory.CreateDirectory(downloadPath);
-
-                // Filter files for this specific paint
-                var paintUrls = userFiles
-                    .Where(f =>
-                        f.Id.Type is PaintType.Helmet or PaintType.Suit
-                        || string.Equals(
-                            f.Id.Directory,
-                            paint.Directory,
-                            StringComparison.OrdinalIgnoreCase
-                        )
+            var userFiles = allUserFiles
+                .Where(f =>
+                    f.Id.Type is PaintType.Helmet or PaintType.Suit
+                    || string.Equals(
+                        f.Id.Directory,
+                        user.Directory,
+                        StringComparison.OrdinalIgnoreCase
                     )
-                    .Select(f => new Uri(f.Url));
+                )
+                .ToList();
 
-                var fileTasks = new List<Task<DownloadedFile?>>();
+            logger.LogInformation(
+                "Downloading {Count} files for User {UserId}",
+                userFiles.Count,
+                userId
+            );
 
-                foreach (var url in paintUrls)
-                {
-                    var task = DownloadPaintToTempDirectory(sessionDownload.SessionId, paint, url);
-                    fileTasks.Add(task);
-                }
-                var files = await Task.WhenAll(fileTasks);
-                downloadedFiles.AddRange(files.OfType<DownloadedFile>());
+            var fileTasks = new List<Task<DownloadedFile?>>();
+            foreach (var file in userFiles)
+            {
+                var task = DownloadPaintToTempDirectory(session.Id, file.Id, new Uri(file.Url));
+                fileTasks.Add(task);
             }
+            var files = await Task.WhenAll(fileTasks);
+            downloadedFiles.AddRange(files.OfType<DownloadedFile>());
         }
 
         return downloadedFiles;
     }
 
     private async Task<DownloadedFile?> DownloadPaintToTempDirectory(
-        SessionId sessionId,
+        Session.SessionId sessionId,
         DownloadId downloadId,
         Uri url
     )
     {
+        var downloadPath = downloadId.DownloadPath(sessionId);
+        Directory.CreateDirectory(downloadPath);
+
         var fileName = Path.GetFileName(url.LocalPath);
         var destinationPath = Path.Combine(downloadId.DownloadPath(sessionId), fileName);
 

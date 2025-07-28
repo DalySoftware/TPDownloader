@@ -8,10 +8,10 @@ internal static class Directories
 
     internal static readonly string Temp = Path.Combine(Path.GetTempPath(), "TPDownloader");
 
-    internal static string SessionFolder(this SessionId sessionId) =>
+    internal static string SessionFolder(this Session.SessionId sessionId) =>
         Path.Combine(Temp, $"{sessionId.MainSessionId}_{sessionId.SubSessionId}");
 
-    internal static string DownloadPath(this DownloadId paint, SessionId sessionId) =>
+    internal static string DownloadPath(this DownloadId paint, Session.SessionId sessionId) =>
         Path.Combine(sessionId.SessionFolder(), paint.Directory);
 
     internal static string SavePath(this DownloadId paint) =>

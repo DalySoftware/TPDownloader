@@ -2,9 +2,9 @@ using YamlDotNet.RepresentationModel;
 
 namespace TradingPaints;
 
-internal static class SessionInfoParser
+internal class SessionInfoParser
 {
-    internal static SessionDownload? GetRequiredDownloads(string yaml)
+    internal Session? GetSessionInfo(string yaml)
     {
         var yamlStream = new YamlStream();
         using var reader = new StringReader(yaml);
@@ -14,17 +14,17 @@ internal static class SessionInfoParser
         if (sessionId == null)
             return null;
 
-        var paints = GetDrivers(yamlStream)
+        var cars = GetDrivers(yamlStream)
             .OfType<YamlMappingNode>()
-            .Select(ToCarPaintDownload)
-            .OfType<DownloadId>()
-            .Where(download => download.UserId > 0)
+            .Select(ToCarInfo)
+            .OfType<Session.User>()
+            .Where(car => car.UserId > 0)
             .ToHashSet();
 
-        return new SessionDownload(sessionId, paints);
+        return new Session(sessionId, cars);
     }
 
-    private static SessionId? GetSessionId(YamlStream yamlStream)
+    private static Session.SessionId? GetSessionId(YamlStream yamlStream)
     {
         if (
             yamlStream.Documents.FirstOrDefault()?.RootNode is not YamlMappingNode root
@@ -43,7 +43,7 @@ internal static class SessionInfoParser
                 ? parsedSubSessionId
                 : null;
 
-        return new SessionId(mainSessionId, subSessionId);
+        return new Session.SessionId(mainSessionId, subSessionId);
     }
 
     private static YamlSequenceNode GetDrivers(YamlStream yamlStream)
@@ -61,10 +61,10 @@ internal static class SessionInfoParser
         return drivers;
     }
 
-    private static DownloadId? ToCarPaintDownload(YamlMappingNode driver) =>
+    private static Session.User? ToCarInfo(YamlMappingNode driver) =>
         driver.Children.TryGetValue("UserID", out var userIdNode)
         && int.TryParse(userIdNode.ToString(), out int userId)
         && driver.Children.TryGetValue("CarPath", out var carPathNode)
-            ? new DownloadId(userId, carPathNode.ToString(), PaintType.Car)
+            ? new Session.User(userId, carPathNode.ToString())
             : null;
 }

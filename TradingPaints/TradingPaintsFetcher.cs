@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging;
 
 namespace TradingPaints;
 
-internal record DownloadFile(DownloadId Id, string Url);
-
 internal class TradingPaintsFetcherFactory(
     HttpClient httpClient,
     ILogger<TradingPaintsFetcher> logger
@@ -27,7 +25,7 @@ internal class TradingPaintsFetcher(
         if (!response.IsSuccessStatusCode)
         {
             logger.LogError(
-                "Failed to fetch paint files for user {userId}. Status: {response.StatusCode}",
+                "Failed to fetch paint files for user {userId}. Status: {StatusCode}",
                 userId,
                 response.StatusCode
             );
@@ -51,7 +49,6 @@ internal class TradingPaintsFetcher(
     private DownloadFile? Parse(XmlNode car)
     {
         // TradingPaints calls these all cars even thought they can be helmets, suits, etc.
-
         var fileUrl = car.SelectSingleNode("file")?.InnerText;
         var directory = car.SelectSingleNode("directory")?.InnerText;
         var type = car.SelectSingleNode("type")?.InnerText;

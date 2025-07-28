@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 internal class PaintManager(ILogger<PaintManager> logger)
 {
     public async Task<IEnumerable<SavedFile>> SaveSessionPaints(
-        SessionId sessionId,
+        Session.SessionId sessionId,
         IEnumerable<DownloadedFile> downloadedFiles
     )
     {

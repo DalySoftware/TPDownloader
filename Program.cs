@@ -13,7 +13,8 @@ var host = Host.CreateDefaultBuilder()
             services
                 .AddTransient<IRacingSDK>()
                 .AddTransient<PaintManager>()
-                .AddTransient<UserInterface>();
+                .AddTransient<UserInterface>()
+                .AddTransient<SessionInfoParser>();
         }
     )
     .Build();
