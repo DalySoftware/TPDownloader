@@ -76,18 +76,15 @@ internal class SessionDownloader(
                     )
                     .Select(f => new Uri(f.Url));
 
+                var fileTasks = new List<Task<DownloadedFile?>>();
+
                 foreach (var url in paintUrls)
                 {
-                    var file = await DownloadPaintToTempDirectory(
-                        sessionDownload.SessionId,
-                        paint,
-                        url
-                    );
-                    if (file != null)
-                    {
-                        downloadedFiles.Add(file);
-                    }
+                    var task = DownloadPaintToTempDirectory(sessionDownload.SessionId, paint, url);
+                    fileTasks.Add(task);
                 }
+                var files = await Task.WhenAll(fileTasks);
+                downloadedFiles.AddRange(files.OfType<DownloadedFile>());
             }
         }
 
