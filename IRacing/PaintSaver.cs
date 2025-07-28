@@ -1,11 +1,16 @@
 internal class PaintSaver
 {
-    public static async Task SaveSessionPaints(IEnumerable<DownloadedFile> downloadedFiles)
+    public static async Task SaveSessionPaints(
+        SessionId sessionId,
+        IEnumerable<DownloadedFile> downloadedFiles
+    )
     {
         foreach (var download in downloadedFiles)
         {
             await MovePaintToIRacing(download);
         }
+
+        Directory.Delete(sessionId.SessionFolder(), true);
     }
 
     private static async Task MovePaintToIRacing(DownloadedFile download)

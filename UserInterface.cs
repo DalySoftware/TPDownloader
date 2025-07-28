@@ -31,7 +31,7 @@ internal class UserInterface(IRacingSDK sdk, SessionDownloader downloader)
             Console.WriteLine(
                 $"Moving {downloaded.Count} files for session {sessionToDownload.SessionId}."
             );
-            await PaintSaver.SaveSessionPaints(downloaded);
+            await PaintSaver.SaveSessionPaints(sessionToDownload.SessionId, downloaded);
             return;
         }
     }
