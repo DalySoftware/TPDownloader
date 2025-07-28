@@ -1,4 +1,5 @@
 ﻿using irsdkSharp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,21 @@ internal static class Program
         try
         {
             var mainForm = new MainForm();
+            var defaultConfig = new Dictionary<string, string?>
+            {
+                ["Logging:LogLevel:Default"] = "Information",
+                ["Logging:LogLevel:Microsoft.*"] = "Warning",
+                ["Logging:LogLevel:System.*"] = "Warning",
+            };
             var host = Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration(
+                    (context, config) =>
+                    {
+                        config.AddInMemoryCollection(defaultConfig);
+                        config.AddJsonFile("appsettings.json", optional: true);
+                        config.AddEnvironmentVariables();
+                    }
+                )
                 .ConfigureLogging(logging =>
                 {
                     logging.AddProvider(new UILoggerProvider(mainForm));
