@@ -1,6 +1,8 @@
-internal class PaintSaver
+using Microsoft.Extensions.Logging;
+
+internal class PaintSaver(ILogger<PaintSaver> logger)
 {
-    public static async Task SaveSessionPaints(
+    public async Task SaveSessionPaints(
         SessionId sessionId,
         IEnumerable<DownloadedFile> downloadedFiles
     )
@@ -13,10 +15,15 @@ internal class PaintSaver
         Directory.Delete(sessionId.SessionFolder(), true);
     }
 
-    private static async Task MovePaintToIRacing(DownloadedFile download)
+    private async Task MovePaintToIRacing(DownloadedFile download)
     {
         if (Path.GetExtension(download.FilePath).Equals(".bz2", StringComparison.OrdinalIgnoreCase))
         {
+            logger.LogDebug(
+                "Extracting {FilePath} to {SavePath}",
+                download.FilePath,
+                download.DownloadId.SavePath()
+            );
             await FileExtractor.ExtractBz2FileAsync(
                 download.FilePath,
                 download.DownloadId.SavePath()
@@ -25,6 +32,11 @@ internal class PaintSaver
             return;
         }
 
+        logger.LogDebug(
+            "Moving {FilePath} to {SavePath}",
+            download.FilePath,
+            download.DownloadId.SavePath()
+        );
         File.Move(download.FilePath, download.DownloadId.SavePath(), true);
     }
 }

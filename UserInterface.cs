@@ -5,18 +5,21 @@ using TradingPaints;
 internal class UserInterface(
     ILogger<UserInterface> logger,
     IRacingSDK sdk,
-    SessionDownloader downloader
+    SessionDownloader downloader,
+    PaintSaver saver
 )
 {
     private SessionId _lastSession = new(0, null);
 
     internal async Task MainLoop()
     {
+        logger.LogInformation("Waiting to connect with an IRacing session...");
         while (true)
         {
             if (!sdk.IsConnected())
             {
-                logger.LogDebug("Waiting to connect with an IRacing session...");
+                if (logger.IsEnabled(LogLevel.Debug))
+                    logger.LogDebug("Waiting for connection...");
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 continue;
             }
@@ -35,25 +38,26 @@ internal class UserInterface(
     {
         if (session == null)
         {
-            logger.LogInformation("No downloads needed for session {SessionId}", session);
+            logger.LogInformation("No downloads needed for {SessionId}", session);
             return;
         }
 
         logger.LogInformation(
-            "Session {SessionId} requires downloads for {PaintIds}",
+            "{SessionId} requires {} downloads: {PaintIds}",
             session.SessionId,
+            session.PaintIds.Count,
             string.Join(", ", session.PaintIds)
         );
 
         var downloaded = (await downloader.DownloadSession(session)).ToHashSet();
 
         logger.LogInformation(
-            "Moving {Count} files for session {SessionId}.",
+            "Moving {Count} files for {SessionId}.",
             downloaded.Count,
             session.SessionId
         );
-        await PaintSaver.SaveSessionPaints(session.SessionId, downloaded);
-        logger.LogInformation("Processing complete for session {SessionId}.", session.SessionId);
+        await saver.SaveSessionPaints(session.SessionId, downloaded);
+        logger.LogInformation("Processing complete for {SessionId}.", session.SessionId);
 
         _lastSession = session.SessionId;
     }

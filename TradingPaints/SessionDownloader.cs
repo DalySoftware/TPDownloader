@@ -100,11 +100,11 @@ internal class SessionDownloader(
         var fileName = Path.GetFileName(url.LocalPath);
         var destinationPath = Path.Combine(downloadId.DownloadPath(sessionId), fileName);
 
-        logger.LogInformation("Downloading {Url} to {DestinationPath}", url, destinationPath);
+        logger.LogDebug("Downloading {Url} to {DestinationPath}", url, destinationPath);
         var fileResponse = await httpClient.GetAsync(url);
         if (!fileResponse.IsSuccessStatusCode)
         {
-            logger.LogError(
+            logger.LogWarning(
                 "Failed to download {Url}. Status code: {StatusCode}",
                 url,
                 fileResponse.StatusCode
