@@ -7,7 +7,11 @@ using TPDownloader;
 using TPDownloader.IRacing;
 using TPDownloader.TradingPaints;
 
-var host = Host.CreateDefaultBuilder()
+var builder = Host.CreateDefaultBuilder(args)
+    .UseWindowsService(options =>
+    {
+        options.ServiceName = "TPDownloader";
+    })
     .ConfigureLogging(
         (context, logging) =>
         {
@@ -18,6 +22,11 @@ var host = Host.CreateDefaultBuilder()
                     options.FormatterName = "SimpleConsoleFormatter";
                 })
                 .AddConsoleFormatter<SimpleConsoleFormatter, ConsoleFormatterOptions>();
+
+            if (OperatingSystem.IsWindows())
+            {
+                logging.AddEventLog();
+            }
         }
     )
     .ConfigureServices(
@@ -28,11 +37,9 @@ var host = Host.CreateDefaultBuilder()
             services
                 .AddTransient<IRacingSDK>()
                 .AddTransient<PaintManager>()
-                .AddTransient<UserInterface>()
-                .AddTransient<SessionInfoParser>();
+                .AddTransient<SessionInfoParser>()
+                .AddHostedService<UserInterface>();
         }
-    )
-    .Build();
+    );
 
-var ui = host.Services.GetRequiredService<UserInterface>();
-await ui.MainLoop();
+await builder.Build().RunAsync();
