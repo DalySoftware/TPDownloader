@@ -1,6 +1,6 @@
 using YamlDotNet.RepresentationModel;
 
-namespace TradingPaints;
+namespace TPDownloader.TradingPaints;
 
 internal class SessionInfoParser
 {

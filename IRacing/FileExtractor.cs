@@ -1,5 +1,7 @@
 using ICSharpCode.SharpZipLib.BZip2;
 
+namespace TPDownloader.IRacing;
+
 internal static class FileExtractor
 {
     internal static async Task ExtractBz2FileAsync(string sourcePath, string destinationPath)

@@ -1,6 +1,9 @@
 using irsdkSharp;
 using Microsoft.Extensions.Logging;
-using TradingPaints;
+using TPDownloader.IRacing;
+using TPDownloader.TradingPaints;
+
+namespace TPDownloader;
 
 internal class UserInterface(
     ILogger<UserInterface> logger,

@@ -1,7 +1,7 @@
 using System.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace TradingPaints;
+namespace TPDownloader.TradingPaints;
 
 internal class TradingPaintsFetcherFactory(
     HttpClient httpClient,

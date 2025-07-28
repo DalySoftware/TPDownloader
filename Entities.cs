@@ -1,3 +1,5 @@
+namespace TPDownloader;
+
 internal record Session(Session.SessionId Id, HashSet<Session.User> Users)
 {
     internal record SessionId(int MainSessionId, int? SubSessionId);

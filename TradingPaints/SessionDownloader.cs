@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace TradingPaints;
+namespace TPDownloader.TradingPaints;
 
 internal class SessionDownloader(
     ILogger<SessionDownloader> logger,

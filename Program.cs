@@ -1,8 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-using irsdkSharp;
+﻿using irsdkSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TradingPaints;
+using TPDownloader;
+using TPDownloader.IRacing;
+using TPDownloader.TradingPaints;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureServices(
