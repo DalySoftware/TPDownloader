@@ -27,7 +27,7 @@ internal static class SessionInfoParser
     private static SessionId? GetSessionId(YamlStream yamlStream)
     {
         if (
-            yamlStream.Documents[0].RootNode is not YamlMappingNode root
+            yamlStream.Documents.FirstOrDefault()?.RootNode is not YamlMappingNode root
             || !root.Children.TryGetValue("WeekendInfo", out var weekendInfoNode)
             || weekendInfoNode is not YamlMappingNode weekendInfo
             || !weekendInfo.Children.TryGetValue("SessionID", out var sessionIdNode)
