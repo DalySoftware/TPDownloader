@@ -40,6 +40,40 @@ internal class MainForm : Form
         _logListBox.TopIndex = _logListBox.Items.Count - 1;
     }
 
+    public string GetAllLogs()
+    {
+        return string.Join("\r\n", _logEntries.Select(e => e.Message));
+    }
+
+    public void CopyAllLogsToClipboard()
+    {
+        Clipboard.SetText(GetAllLogs());
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        var menu = new ContextMenuStrip();
+        var copyItem = new ToolStripMenuItem("Copy All Logs", null, (_, __) => CopyAllLogsToClipboard());
+        var saveItem = new ToolStripMenuItem("Save Logs As...", null, (_, __) => SaveLogsAs());
+        menu.Items.Add(copyItem);
+        menu.Items.Add(saveItem);
+        _logListBox.ContextMenuStrip = menu;
+    }
+
+    private void SaveLogsAs()
+    {
+        using var dialog = new SaveFileDialog
+        {
+            Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+            FileName = "TPDownloaderLog.txt"
+        };
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            File.WriteAllText(dialog.FileName, GetAllLogs());
+        }
+    }
+
     private void LogListBox_DrawItem(object? sender, DrawItemEventArgs e)
     {
         if (e.Index < 0 || e.Index >= _logEntries.Count)
