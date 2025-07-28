@@ -1,11 +1,13 @@
 # TPDownloader
+![Example usage](readme_assets/ExampleUsage.png)
+
 An open source alternative [Trading Paints](https://www.tradingpaints.com/) downloader for IRacing.
 
 ## Installation
 TBC
 
 ## Usage
-TBC
+Simply add a shortcut to the app to run automatically on startup. You're all set! It will monitor for any IRacing session that you join and download the relevant paints.
 
 ## Features
 - Downloads, unpacks and saves all paint types
