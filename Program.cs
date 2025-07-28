@@ -11,9 +11,9 @@ var host = Host.CreateDefaultBuilder()
             services.AddHttpClient<TradingPaintsFetcherFactory>();
             services.AddHttpClient<SessionDownloader>();
             services
-                .AddSingleton<IRacingSDK>()
+                .AddTransient<IRacingSDK>()
                 .AddTransient<PaintSaver>()
-                .AddSingleton<UserInterface>();
+                .AddTransient<UserInterface>();
         }
     )
     .Build();
