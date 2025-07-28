@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace TPDownloader.UI;
 
 internal class TrayApplication(MainForm mainForm, PaintService paintService) : IDisposable
@@ -11,7 +13,7 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         _paintServiceCts = new CancellationTokenSource();
         _ = paintService.StartAsync(_paintServiceCts.Token);
 
-        var appIcon = new Icon(Path.Combine("UI", "icon.ico"), new Size(48, 48));
+        var appIcon = GetIcon();
         _trayIcon = new NotifyIcon
         {
             Icon = appIcon,
@@ -75,5 +77,15 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
             _isDisposed = true;
         }
         GC.SuppressFinalize(this);
+    }
+
+    private static Icon GetIcon()
+    {
+        using var stream = Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("TPDownloader.UI.icon.ico");
+        return stream is not null
+            ? new Icon(stream, new Size(48, 48))
+            : new Icon(SystemIcons.Application, new Size(48, 48));
     }
 }
