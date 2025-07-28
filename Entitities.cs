@@ -15,3 +15,5 @@ internal enum PaintType
 internal record SessionDownload(SessionId SessionId, HashSet<DownloadId> PaintIds);
 
 internal record DownloadedFile(SessionId SessionId, DownloadId DownloadId, string FilePath);
+
+internal record SavedFile(SessionId SessionId, DownloadId DownloadId, string FilePath);

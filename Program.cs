@@ -12,7 +12,7 @@ var host = Host.CreateDefaultBuilder()
             services.AddHttpClient<SessionDownloader>();
             services
                 .AddTransient<IRacingSDK>()
-                .AddTransient<PaintSaver>()
+                .AddTransient<PaintManager>()
                 .AddTransient<UserInterface>();
         }
     )

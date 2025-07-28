@@ -6,10 +6,10 @@ internal class UserInterface(
     ILogger<UserInterface> logger,
     IRacingSDK sdk,
     SessionDownloader downloader,
-    PaintSaver saver
+    PaintManager paintManager
 )
 {
-    private SessionId _lastSession = new(0, null);
+    private (SessionId Id, HashSet<SavedFile> Files) _lastSession = (new SessionId(0, null), []);
 
     internal async Task MainLoop()
     {
@@ -27,15 +27,18 @@ internal class UserInterface(
             // The OnConnected event doesnt work for some reason so we do it manually
             var sessionYaml = sdk.GetSessionInfo();
             var session = SessionInfoParser.GetRequiredDownloads(sessionYaml);
-            if (session is { } && session.SessionId != _lastSession)
+            if (session is { } && session.SessionId != _lastSession.Id)
             {
-                await DownAndSavePaints(session);
+                await DownloadAndSavePaints(session);
             }
         }
     }
 
-    private async Task DownAndSavePaints(SessionDownload session)
+    private async Task DownloadAndSavePaints(SessionDownload session)
     {
+        logger.LogInformation("Deleting paints for old session {SessionId}", _lastSession.Id);
+        paintManager.DeleteLastSessionPaints(_lastSession.Files);
+
         if (session == null)
         {
             logger.LogInformation("No downloads needed for {SessionId}", session);
@@ -56,9 +59,10 @@ internal class UserInterface(
             downloaded.Count,
             session.SessionId
         );
-        await saver.SaveSessionPaints(session.SessionId, downloaded);
-        logger.LogInformation("Processing complete for {SessionId}.", session.SessionId);
 
-        _lastSession = session.SessionId;
+        var savedFiles = await paintManager.SaveSessionPaints(session.SessionId, downloaded);
+        _lastSession = (session.SessionId, savedFiles.ToHashSet());
+
+        logger.LogInformation("Processing complete for {SessionId}.", session.SessionId);
     }
 }
