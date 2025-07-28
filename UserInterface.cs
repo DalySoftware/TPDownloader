@@ -1,6 +1,4 @@
 using irsdkSharp;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using TPDownloader.IRacing;
 using TPDownloader.TradingPaints;
 
@@ -51,6 +49,13 @@ internal class UserInterface(
                 if (session is { } && session.Id != _lastSession.Id)
                 {
                     await DownloadAndSavePaints(session);
+
+                    logger.LogInformation("Requesting IRacing texture reload");
+                    sdk.BroadcastMessage(
+                        irsdkSharp.Enums.BroadcastMessageTypes.ReloadTextures,
+                        0,
+                        0
+                    );
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
