@@ -8,31 +8,32 @@ internal class UserInterface(
     SessionDownloader downloader
 )
 {
+    private SessionId _lastSession = new(0, null);
+
     internal async Task MainLoop()
     {
-        sdk.OnConnected -= OnConnected;
-        sdk.OnConnected += OnConnected;
-        sdk.OnDisconnected -= OnDisconnected;
-        sdk.OnConnected += OnDisconnected;
-
-        logger.LogInformation("Waiting for iRacing SDK connection");
         while (true)
         {
             if (!sdk.IsConnected())
             {
-                logger.LogDebug("Waiting to connect...");
+                logger.LogDebug("Waiting to connect with an IRacing session...");
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 continue;
+            }
+
+            // The OnConnected event doesnt work for some reason so we do it manually
+            var sessionYaml = sdk.GetSessionInfo();
+            var session = SessionInfoParser.GetRequiredDownloads(sessionYaml);
+            if (session is { } && session.SessionId != _lastSession)
+            {
+                await DownAndSavePaints(session);
             }
         }
     }
 
-    private async void OnConnected()
+    private async Task DownAndSavePaints(SessionDownload session)
     {
-        logger.LogInformation("Connected to iRacing SDK");
-        var session = sdk.GetSessionInfo();
-        var sessionToDownload = SessionInfoParser.GetRequiredDownloads(session);
-        if (sessionToDownload == null)
+        if (session == null)
         {
             logger.LogInformation("No downloads needed for session {SessionId}", session);
             return;
@@ -40,26 +41,20 @@ internal class UserInterface(
 
         logger.LogInformation(
             "Session {SessionId} requires downloads for {PaintIds}",
-            sessionToDownload.SessionId,
-            string.Join(", ", sessionToDownload.PaintIds)
+            session.SessionId,
+            string.Join(", ", session.PaintIds)
         );
 
-        var downloaded = (await downloader.DownloadSession(sessionToDownload)).ToHashSet();
+        var downloaded = (await downloader.DownloadSession(session)).ToHashSet();
 
         logger.LogInformation(
             "Moving {Count} files for session {SessionId}.",
             downloaded.Count,
-            sessionToDownload.SessionId
+            session.SessionId
         );
-        await PaintSaver.SaveSessionPaints(sessionToDownload.SessionId, downloaded);
-        logger.LogInformation(
-            "Finished moving files for session {SessionId}.",
-            sessionToDownload.SessionId
-        );
-    }
+        await PaintSaver.SaveSessionPaints(session.SessionId, downloaded);
+        logger.LogInformation("Processing complete for session {SessionId}.", session.SessionId);
 
-    private void OnDisconnected()
-    {
-        logger.LogInformation("Waiting for iRacing SDK connection");
+        _lastSession = session.SessionId;
     }
 }
