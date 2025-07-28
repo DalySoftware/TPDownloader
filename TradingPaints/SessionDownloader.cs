@@ -68,7 +68,8 @@ internal class SessionDownloader(
                 // Filter files for this specific paint
                 var paintUrls = userFiles
                     .Where(f =>
-                        string.Equals(
+                        f.Id.Type is PaintType.Helmet or PaintType.Suit
+                        || string.Equals(
                             f.Id.Directory,
                             paint.Directory,
                             StringComparison.OrdinalIgnoreCase

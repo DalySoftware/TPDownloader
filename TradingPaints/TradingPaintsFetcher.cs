@@ -36,7 +36,7 @@ internal class TradingPaintsFetcher(
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var doc = new System.Xml.XmlDocument();
+        var doc = new XmlDocument();
         doc.LoadXml(content);
 
         var cars = doc.SelectNodes("//Car");
@@ -50,6 +50,8 @@ internal class TradingPaintsFetcher(
 
     private DownloadFile? Parse(XmlNode car)
     {
+        // TradingPaints calls these all cars even thought they can be helmets, suits, etc.
+
         var fileUrl = car.SelectSingleNode("file")?.InnerText;
         var directory = car.SelectSingleNode("directory")?.InnerText;
         var type = car.SelectSingleNode("type")?.InnerText;
