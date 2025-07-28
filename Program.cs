@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using irsdkSharp;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TPDownloader.IRacing;
@@ -25,14 +26,18 @@ internal static class Program
                     logging.AddProvider(new UILoggerProvider(mainForm));
                 })
                 .ConfigureServices(services =>
+                {
                     services
                         .AddSingleton(mainForm)
                         .AddSingleton<TrayApplication>()
+                        .AddSingleton<PaintService>()
                         .AddTransient<PaintManager>()
-                        .AddTransient<SessionDownloader>()
                         .AddTransient<SessionInfoParser>()
-                        .AddTransient<TradingPaintsFetcher>()
-                )
+                        .AddTransient<IRacingSDK>();
+
+                    services.AddHttpClient<TradingPaintsFetcherFactory>();
+                    services.AddHttpClient<SessionDownloader>();
+                })
                 .Build();
 
             var trayApp = host.Services.GetRequiredService<TrayApplication>();

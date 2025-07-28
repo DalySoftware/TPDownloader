@@ -1,13 +1,16 @@
 namespace TPDownloader.UI;
 
-internal class TrayApplication(MainForm mainForm) : IDisposable
+internal class TrayApplication(MainForm mainForm, PaintService paintService) : IDisposable
 {
     private NotifyIcon? _trayIcon;
     private bool _isDisposed;
-    private MainForm _mainForm = mainForm;
+    private CancellationTokenSource? _paintServiceCts;
 
     public void Run()
     {
+        _paintServiceCts = new CancellationTokenSource();
+        _ = paintService.StartAsync(_paintServiceCts.Token);
+
         _trayIcon = new NotifyIcon
         {
             Icon = SystemIcons.Application,
@@ -21,34 +24,39 @@ internal class TrayApplication(MainForm mainForm) : IDisposable
         _trayIcon.ContextMenuStrip = contextMenu;
         _trayIcon.DoubleClick += (_, __) => ShowWindow();
 
-        _mainForm.Resize += (s, e) =>
+        mainForm.Resize += (s, e) =>
         {
-            if (_mainForm.WindowState == FormWindowState.Minimized)
+            if (mainForm.WindowState == FormWindowState.Minimized)
             {
-                _mainForm.Hide();
+                mainForm.Hide();
             }
         };
-        _mainForm.FormClosing += (s, e) =>
+        mainForm.FormClosing += (s, e) =>
         {
             _trayIcon.Visible = false;
         };
 
         ShowWindow();
-        Application.Run(_mainForm);
+        Application.Run(mainForm);
     }
 
     private void ShowWindow()
     {
-        if (_mainForm.Visible == false)
+        if (!mainForm.Visible)
         {
-            _mainForm.Show();
-            _mainForm.WindowState = FormWindowState.Normal;
+            mainForm.Show();
+            mainForm.WindowState = FormWindowState.Normal;
         }
-        _mainForm.Activate();
+        mainForm.Activate();
     }
 
     private void ExitApp()
     {
+        if (_paintServiceCts is not null)
+        {
+            _paintServiceCts.Cancel();
+            paintService.StopAsync(CancellationToken.None);
+        }
         if (_trayIcon is not null)
             _trayIcon.Visible = false;
         Application.Exit();
@@ -59,7 +67,7 @@ internal class TrayApplication(MainForm mainForm) : IDisposable
         if (!_isDisposed)
         {
             _trayIcon?.Dispose();
-            _mainForm?.Dispose();
+            mainForm?.Dispose();
             _isDisposed = true;
         }
         GC.SuppressFinalize(this);
