@@ -12,8 +12,8 @@ internal class MainForm : Form
     {
         Text = "TPDownloader Log";
         Controls.Add(_logListBox);
-        Width = 600;
-        Height = 400;
+        Width = 1000;
+        Height = 600;
         _logListBox.DrawMode = DrawMode.OwnerDrawFixed;
         _logListBox.DrawItem += LogListBox_DrawItem;
     }
@@ -54,7 +54,11 @@ internal class MainForm : Form
     {
         base.OnLoad(e);
         var menu = new ContextMenuStrip();
-        var copyItem = new ToolStripMenuItem("Copy All Logs", null, (_, __) => CopyAllLogsToClipboard());
+        var copyItem = new ToolStripMenuItem(
+            "Copy All Logs",
+            null,
+            (_, __) => CopyAllLogsToClipboard()
+        );
         var saveItem = new ToolStripMenuItem("Save Logs As...", null, (_, __) => SaveLogsAs());
         menu.Items.Add(copyItem);
         menu.Items.Add(saveItem);
@@ -66,7 +70,7 @@ internal class MainForm : Form
         using var dialog = new SaveFileDialog
         {
             Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
-            FileName = "TPDownloaderLog.txt"
+            FileName = "TPDownloaderLog.txt",
         };
         if (dialog.ShowDialog() == DialogResult.OK)
         {
