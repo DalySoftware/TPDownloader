@@ -20,7 +20,7 @@ internal class SessionDownloader(
         if (Directory.Exists(session.Id.SessionFolder()))
         {
             logger.LogInformation(
-                "Session folder {SessionFolder} already exists. Removing existing files.",
+                "Session folder {SessionFolder} already exists. Removing existing files",
                 session.Id.SessionFolder()
             );
             Directory.Delete(session.Id.SessionFolder(), true);

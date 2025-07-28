@@ -63,6 +63,6 @@ internal class UserInterface(
         var savedFiles = await paintManager.SaveSessionPaints(session.Id, downloaded);
         _lastSession = (session.Id, savedFiles.ToHashSet());
 
-        logger.LogInformation("Processing complete for {SessionId}.", session.Id);
+        logger.LogInformation("Processing complete for {SessionId}", session.Id);
     }
 }
