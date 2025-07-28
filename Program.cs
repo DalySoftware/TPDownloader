@@ -1,42 +1,31 @@
-﻿using irsdkSharp;
-using Microsoft.Extensions.Logging.Console;
-using TPDownloader;
-using TPDownloader.IRacing;
-using TPDownloader.TradingPaints;
+﻿using Microsoft.Extensions.DependencyInjection;
+using TPDownloader.UI;
 
-var builder = Host.CreateDefaultBuilder(args)
-    .UseWindowsService(options =>
+namespace TPDownloader;
+
+internal static class Program
+{
+    [STAThread]
+    public static void Main()
     {
-        options.ServiceName = "TPDownloader";
-    })
-    .ConfigureLogging(
-        (context, logging) =>
-        {
-            logging.ClearProviders();
-            logging
-                .AddConsole(options =>
-                {
-                    options.FormatterName = "SimpleConsoleFormatter";
-                })
-                .AddConsoleFormatter<SimpleConsoleFormatter, ConsoleFormatterOptions>();
+        Application.SetHighDpiMode(HighDpiMode.SystemAware);
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
 
-            if (OperatingSystem.IsWindows())
-            {
-                logging.AddEventLog();
-            }
-        }
-    )
-    .ConfigureServices(
-        (_, services) =>
+        try
         {
-            services.AddHttpClient<TradingPaintsFetcherFactory>();
-            services.AddHttpClient<SessionDownloader>();
-            services
-                .AddTransient<IRacingSDK>()
-                .AddTransient<PaintManager>()
-                .AddTransient<SessionInfoParser>()
-                .AddHostedService<UserInterface>();
-        }
-    );
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddSingleton<MainForm>();
+            services.AddSingleton<TrayApplication>();
 
-await builder.Build().RunAsync();
+            var provider = services.BuildServiceProvider();
+            var trayApp = provider.GetRequiredService<TrayApplication>();
+            trayApp.Run();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Startup error: {ex}");
+        }
+    }
+}

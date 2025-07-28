@@ -1,4 +1,5 @@
 using System.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace TPDownloader.TradingPaints;
 

@@ -5,8 +5,8 @@ using TPDownloader.TradingPaints;
 
 namespace TPDownloader;
 
-internal class UserInterface(
-    ILogger<UserInterface> logger,
+internal class PaintService(
+    ILogger<PaintService> logger,
     IRacingSDK sdk,
     SessionDownloader downloader,
     PaintManager paintManager,
@@ -68,15 +68,6 @@ internal class UserInterface(
         }
     }
 
-    private void Cleanup()
-    {
-        if (_lastSession.Files.Count > 0)
-        {
-            logger.LogInformation("Cleaning up last session {SessionId} on exit", _lastSession.Id);
-            paintManager.DeleteLastSessionPaints(_lastSession.Files);
-        }
-    }
-
     private async Task DownloadAndSavePaints(Session session)
     {
         logger.LogInformation("Deleting paints for old session {SessionId}", _lastSession.Id);
@@ -100,5 +91,14 @@ internal class UserInterface(
         _lastSession = (session.Id, savedFiles.ToHashSet());
 
         logger.LogInformation("Processing complete for {SessionId}", session.Id);
+    }
+
+    private void Cleanup()
+    {
+        if (_lastSession.Files.Count > 0)
+        {
+            logger.LogInformation("Cleaning up last session {SessionId} on exit", _lastSession.Id);
+            paintManager.DeleteLastSessionPaints(_lastSession.Files);
+        }
     }
 }

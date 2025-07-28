@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace TPDownloader.IRacing;
 
 internal class PaintManager(ILogger<PaintManager> logger)
