@@ -37,6 +37,7 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         {
             _trayIcon.Visible = false;
         };
+        mainForm.FormClosed += (s, e) => ExitApp();
 
         ShowWindow();
         Application.Run(mainForm);
@@ -54,11 +55,9 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
 
     private void ExitApp()
     {
-        if (_paintServiceCts is not null)
-        {
-            _paintServiceCts.Cancel();
-            paintService.StopAsync(CancellationToken.None);
-        }
+        _paintServiceCts?.Cancel();
+        paintService.Dispose();
+
         if (_trayIcon is not null)
             _trayIcon.Visible = false;
         Application.Exit();
@@ -68,6 +67,9 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
     {
         if (!_isDisposed)
         {
+            _paintServiceCts?.Cancel();
+            paintService.Dispose();
+
             _trayIcon?.Dispose();
             mainForm?.Dispose();
             _isDisposed = true;

@@ -11,22 +11,18 @@ internal class PaintService(
     SessionDownloader downloader,
     PaintManager paintManager,
     SessionInfoParser sessionParser
-)
+) : IDisposable
 {
     private (Session.SessionId Id, HashSet<SavedFile> Files) _lastSession = (
         new Session.SessionId(0, null),
         []
     );
 
+    private bool _disposed;
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
         return MainLoop(cancellationToken);
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        Cleanup();
-        return Task.CompletedTask;
     }
 
     private async Task MainLoop(CancellationToken cancellationToken)
@@ -100,5 +96,23 @@ internal class PaintService(
             logger.LogInformation("Cleaning up last session {SessionId} on exit", _lastSession.Id);
             paintManager.DeleteLastSessionPaints(_lastSession.Files);
         }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                Cleanup();
+            }
+            _disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

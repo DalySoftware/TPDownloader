@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 internal class MainForm : Form
 {
-    private readonly List<(string Message, Color Color)> _logEntries = new();
+    private readonly List<(string Message, Color Color)> _logEntries = [];
     private readonly ListBox _logListBox = new() { Dock = DockStyle.Fill };
 
     public MainForm()
