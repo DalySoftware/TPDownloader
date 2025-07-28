@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace TPDownloader.TradingPaints;
 
 internal class SessionDownloader(
