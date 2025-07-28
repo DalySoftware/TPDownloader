@@ -11,12 +11,14 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         _paintServiceCts = new CancellationTokenSource();
         _ = paintService.StartAsync(_paintServiceCts.Token);
 
+        var appIcon = new Icon(Path.Combine("UI", "icon.ico"), new Size(48, 48));
         _trayIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = appIcon,
             Visible = true,
             Text = "TP Downloader",
         };
+        mainForm.Icon = appIcon;
 
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("Show", null, (_, __) => ShowWindow());
