@@ -21,8 +21,8 @@ internal static class Directories
             PaintType.CarDecal => paint.CarFile($"decal_{paint.UserId}.tga"),
             PaintType.CarNumber => paint.CarFile($"car_num_{paint.UserId}.tga"),
             PaintType.CarSpecMap => paint.CarFile($"car_spec_{paint.UserId}.mip"),
-            PaintType.Helmet => $"helmet_{paint.UserId}.tga",
-            PaintType.Suit => $"suit_{paint.UserId}.tga",
+            PaintType.Helmet => Path.Combine(IRacingPaints, $"helmet_{paint.UserId}.tga"),
+            PaintType.Suit => Path.Combine(IRacingPaints, $"suit_{paint.UserId}.tga"),
             _ => throw new ArgumentException($"Unknown paint type: {paint.Type}"),
         };
 
