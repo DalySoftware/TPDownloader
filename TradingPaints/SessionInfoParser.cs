@@ -1,5 +1,7 @@
 using YamlDotNet.RepresentationModel;
 
+namespace TradingPaints;
+
 internal static class SessionInfoParser
 {
     internal static SessionDownload? GetRequiredDownloads(string yaml)

@@ -1,7 +1,7 @@
 using System.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace Downloading;
+namespace TradingPaints;
 
 internal record DownloadFile(DownloadId Id, string Url);
 

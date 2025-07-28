@@ -15,5 +15,17 @@ internal static class Directories
         Path.Combine(sessionId.SessionFolder(), paint.Directory);
 
     internal static string SavePath(this DownloadId paint) =>
-        Path.Combine(IRacingPaints, paint.UserId.ToString(), paint.Directory);
+        paint.Type switch
+        {
+            PaintType.Car => paint.CarFile($"car_{paint.UserId}.tga"),
+            PaintType.CarDecal => paint.CarFile($"decal_{paint.UserId}.tga"),
+            PaintType.CarNumber => paint.CarFile($"car_num_{paint.UserId}.tga"),
+            PaintType.CarSpecMap => paint.CarFile($"car_spec_{paint.UserId}.mip"),
+            PaintType.Helmet => $"helmet_{paint.UserId}.tga",
+            PaintType.Suit => $"suit_{paint.UserId}.tga",
+            _ => throw new ArgumentException($"Unknown paint type: {paint.Type}"),
+        };
+
+    private static string CarFile(this DownloadId paint, string filename) =>
+        Path.Combine(IRacingPaints, paint.Directory, filename);
 }
