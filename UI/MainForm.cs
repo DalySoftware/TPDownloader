@@ -31,6 +31,11 @@ internal class MainForm : Form
             return;
         }
         _logEntries.Add((message, color));
+        if (_logEntries.Count > 1024)
+        {
+            _logEntries.RemoveAt(0);
+            _logListBox.Items.RemoveAt(0);
+        }
         _logListBox.Items.Add(message);
         _logListBox.TopIndex = _logListBox.Items.Count - 1;
     }
