@@ -3,16 +3,18 @@
 
 An open source alternative [Trading Paints](https://www.tradingpaints.com/) downloader for IRacing.
 
-## Installation
-TBC
-
 ## Usage
-Simply add a shortcut to the app to run automatically on startup. You're all set! It will monitor for any IRacing session that you join and download the relevant paints.
+1. Go to the [latest release](https://github.com/DalySoftware/TPDownloader/releases/latest).
+2. Download `TPDownloader.exe` from the Assets section.
+3. Place it anywhere on your computer.
+4. Right-click and create a shortcut. Place it in the `shell:startup` folder to run automatically.
+
+You're all set! TPDownloader will monitor for any IRacing session that you join and download the relevant paints.
 
 ## Features
 - Downloads, unpacks and saves all paint types
-- Cleans up anything it downloaded when stopped or session exited
 - Triggers IRacing to refresh paints after finishing downloads
+- Cleans up anything it downloaded when stopped or session exited
 
 No other major features are planned. The intention is to keep this program minimalist so that you can reasonably review it before running on your system.
 
