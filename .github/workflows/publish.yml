@@ -1,4 +1,4 @@
-name: Publish and Upload EXE
+name: Publish and upload executable
 
 on:
   push:
@@ -26,3 +26,10 @@ jobs:
           name: TPDownloader-win-x64
           path: |
             bin/Release/net9.0-windows/win-x64/publish/TPDownloader.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: bin/Release/net9.0-windows/win-x64/publish/TPDownloader.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
