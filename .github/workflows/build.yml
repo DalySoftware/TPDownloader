@@ -1,10 +1,12 @@
-name: Build and Publish
+name: Build
 
 on:
   push:
-    tags:
-      - '*'
-  workflow_dispatch:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build:
@@ -17,12 +19,5 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Publish single-file executable
-        run: dotnet publish TPDownloader.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:DebugType=None
-
-      - name: Upload executable artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: TPDownloader-win-x64
-          path: |
-            bin/Release/net9.0-windows/win-x64/publish/TPDownloader.exe
+      - name: Build
+        run: dotnet build TPDownloader.csproj -c Release

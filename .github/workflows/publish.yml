@@ -1,0 +1,28 @@
+name: Publish and Upload EXE
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file executable
+        run: dotnet publish TPDownloader.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:DebugType=None
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TPDownloader-win-x64
+          path: |
+            bin/Release/net9.0-windows/win-x64/publish/TPDownloader.exe
