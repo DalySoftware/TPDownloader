@@ -11,6 +11,8 @@ An open source alternative [Trading Paints](https://www.tradingpaints.com/) down
 
 You're all set! TPDownloader will monitor for any IRacing session that you join and download the relevant paints.
 
+The program starts minimized in the system tray by default. To view logs, right click the tray icon and select "Show".
+
 ## Features
 - Downloads, unpacks and saves all paint types
 - Triggers IRacing to refresh paints after finishing downloads

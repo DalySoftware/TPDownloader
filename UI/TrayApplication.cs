@@ -41,9 +41,9 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         };
         mainForm.FormClosed += (s, e) => ExitApp();
 
-        mainForm.WindowState = FormWindowState.Minimized;
-        mainForm.Hide();
-        Application.Run(mainForm);
+        // Start the application as a minimized tray icon
+        mainForm.Load += (s, e) => mainForm.Hide();
+        Application.Run();
     }
 
     private void ShowWindow()
