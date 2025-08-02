@@ -73,7 +73,7 @@ namespace TPDownloader.TradingPaints
             Directory.CreateDirectory(downloadPath);
 
             var fileName = Path.GetFileName(url.LocalPath);
-            var destinationPath = Path.Combine(downloadId.DownloadPath(sessionId), fileName);
+            var destinationPath = Path.Combine(downloadPath, fileName);
 
             logger.LogDebug("Downloading {Url} to {DestinationPath}", url, destinationPath);
             var fileResponse = await httpClient.GetAsync(url);
