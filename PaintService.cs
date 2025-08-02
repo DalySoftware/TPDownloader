@@ -67,12 +67,6 @@ internal class PaintService(
         logger.LogInformation("Deleting paints for old session {SessionId}", _lastSession.Id);
         paintManager.DeleteLastSessionPaints(_lastSession.Files);
 
-        if (session == null)
-        {
-            logger.LogInformation("No downloads needed for {SessionId}", session);
-            return;
-        }
-
         var downloaded = (await downloader.DownloadSession(session)).ToHashSet();
 
         logger.LogInformation(
