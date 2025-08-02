@@ -32,10 +32,10 @@ internal class UILogger(MainForm mainForm) : ILogger
         public void Dispose() { }
     }
 
-    private string ShortName(LogLevel logLevel) =>
+    private static string ShortName(LogLevel logLevel) =>
         logLevel switch
         {
-            LogLevel.Trace => "Trade",
+            LogLevel.Trace => "Trace",
             LogLevel.Debug => "Debug",
             LogLevel.Information => "Info",
             LogLevel.Warning => "Warn",
