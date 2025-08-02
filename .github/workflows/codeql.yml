@@ -34,9 +34,11 @@ jobs:
         languages: csharp
         build-mode: manual
 
-    - name: Restore and Build
-      run: |
-        dotnet build --configuration Release
+    - name: Restore dependencies
+      run: dotnet restore TPDownloader.sln
+
+    - name: Build solution
+      run: dotnet build TPDownloader.sln --configuration Release --no-restore
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
