@@ -16,7 +16,7 @@ The program starts minimized in the system tray by default. To view logs, right 
 ## Features
 - Downloads, unpacks and saves all paint types
 - Triggers IRacing to refresh paints after finishing downloads
-- Cleans up anything it downloaded when stopped or session exited
+- Cleans up anything it downloaded when TPDownloader is exited or a new session is joined
 
 No other major features are planned. The intention is to keep this program minimalist so that you can reasonably review it before running on your system.
 
