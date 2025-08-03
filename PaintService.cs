@@ -54,6 +54,8 @@ internal class PaintService(
                         0
                     );
                 }
+
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             }
         }
         catch (OperationCanceledException)
