@@ -25,6 +25,7 @@ internal class PaintService(
         return MainLoop(cancellationToken);
     }
 
+    private bool _wasConnected;
     private async Task MainLoop(CancellationToken cancellationToken)
     {
         try
@@ -34,11 +35,20 @@ internal class PaintService(
             {
                 if (!sdk.IsConnected())
                 {
+                    if (_wasConnected)
+                    {
+                        logger.LogInformation("Session exited");
+                        Cleanup();
+                    }
+
+                    _wasConnected = false;
                     if (logger.IsEnabled(LogLevel.Debug))
                         logger.LogDebug("Waiting for connection...");
                     await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
                     continue;
                 }
+
+                _wasConnected = true;
 
                 // The OnConnected event doesnt work for some reason so we do it manually
                 var sessionYaml = sdk.GetSessionInfo();
@@ -87,7 +97,7 @@ internal class PaintService(
     {
         if (_lastSession.Files.Count > 0)
         {
-            logger.LogInformation("Cleaning up last session {SessionId} on exit", _lastSession.Id);
+            logger.LogInformation("Cleaning up last session {SessionId}", _lastSession.Id);
             paintManager.DeleteLastSessionPaints(_lastSession.Files);
         }
     }
