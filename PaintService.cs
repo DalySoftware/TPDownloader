@@ -13,10 +13,8 @@ internal class PaintService(
     SessionInfoParser sessionParser
 ) : IDisposable
 {
-    private (Session.SessionId Id, HashSet<SavedFile> Files) _lastSession = (
-        new Session.SessionId(0, null),
-        []
-    );
+    private (Session.SessionId Id, HashSet<SavedFile> Files) _lastSession = NullSession;
+    private readonly static (Session.SessionId Id, HashSet<SavedFile> Files) NullSession = new(new Session.SessionId(0, null), []);
 
     private bool _disposed;
 
@@ -100,6 +98,8 @@ internal class PaintService(
             logger.LogInformation("Cleaning up last session {SessionId}", _lastSession.Id);
             paintManager.DeleteLastSessionPaints(_lastSession.Files);
         }
+
+        _lastSession = NullSession;
     }
 
     protected virtual void Dispose(bool disposing)
