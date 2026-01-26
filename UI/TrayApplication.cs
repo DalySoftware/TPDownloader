@@ -7,11 +7,15 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
     private NotifyIcon? _trayIcon;
     private bool _isDisposed;
     private CancellationTokenSource? _paintServiceCts;
+    private Task? _paintServiceTask;
 
     public void Run()
     {
         _paintServiceCts = new CancellationTokenSource();
-        _ = paintService.StartAsync(_paintServiceCts.Token);
+
+        // Start and *observe* faults
+        _paintServiceTask = paintService.StartAsync(_paintServiceCts.Token);
+        ObservePaintService(_paintServiceTask);
 
         var appIcon = GetIcon();
         _trayIcon = new NotifyIcon
@@ -31,19 +35,37 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         mainForm.Resize += (s, e) =>
         {
             if (mainForm.WindowState == FormWindowState.Minimized)
-            {
                 mainForm.Hide();
-            }
         };
         mainForm.FormClosing += (s, e) =>
         {
-            _trayIcon.Visible = false;
+            if (_trayIcon is not null) _trayIcon.Visible = false;
         };
         mainForm.FormClosed += (s, e) => ExitApp();
 
-        // Start the application as a minimized tray icon
         mainForm.Load += (s, e) => mainForm.Hide();
         Application.Run();
+    }
+
+    private void ObservePaintService(Task task)
+    {
+        var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+        _ = task.ContinueWith(t =>
+        {
+            // Observe the exception
+            var ex = t.Exception?.GetBaseException() ?? t.Exception;
+
+            if (_trayIcon is not null)
+            {
+                _trayIcon.BalloonTipTitle = "TP Downloader crashed";
+                _trayIcon.BalloonTipText = ex?.Message ?? "Unknown error";
+                _trayIcon.ShowBalloonTip(10_000);
+            }
+
+            Environment.FailFast("TP downloader crashed", ex);
+
+        }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, uiScheduler);
     }
 
     private void ShowWindow()
@@ -63,6 +85,7 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
 
         if (_trayIcon is not null)
             _trayIcon.Visible = false;
+
         Application.Exit();
     }
 
