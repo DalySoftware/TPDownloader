@@ -7,7 +7,7 @@ internal record Session(Session.SessionId Id, HashSet<Session.User> Users, bool 
     internal record User(int UserId, int TeamId, string Directory, string CarNumber);
 }
 
-internal record DownloadId(int UserId, string Directory, PaintType Type);
+internal record DownloadId(int UserId, int TeamId, string Directory, PaintType Type);
 
 internal record DownloadFile(DownloadId Id, string Url);
 

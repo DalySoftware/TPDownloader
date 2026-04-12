@@ -63,7 +63,7 @@ internal class TradingPaintsFetcher(
             return null;
         }
 
-        var downloadId = new DownloadId(userId, directory, ToPaintType(type));
+        var downloadId = new DownloadId(userId, 0, directory, ToPaintType(type));
         return new DownloadFile(downloadId, fileUrl);
     }
 

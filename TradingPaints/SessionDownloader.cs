@@ -26,42 +26,40 @@ namespace TPDownloader.TradingPaints
                 Directory.Delete(session.Id.SessionFolder(), true);
             }
 
-            var downloadedFiles = new List<DownloadedFile>();
+            var allFiles = await FetchSessionFiles(session);
+            var fileTasks = new List<Task<DownloadedFile?>>();
+            foreach (var file in allFiles)
+            {
+                var task = DownloadPaintToTempDirectory(session.Id, file.Id, new Uri(file.Url));
+                fileTasks.Add(task);
+            }
+
+            var results = await Task.WhenAll(fileTasks);
+            return results.OfType<DownloadedFile>();
+        }
+        
+        private async Task<List<DownloadFile>> FetchSessionFiles(Session session) => 
+            session.TeamRacing ? FetchTeamSessionFiles(session) : await FetchIndividualSessionFiles(session);
+
+        private async Task<List<DownloadFile>> FetchIndividualSessionFiles(Session session)
+        {
+            var files = new List<DownloadFile>();
 
             foreach (var user in session.Users)
             {
-                var userId = user.UserId;
-                var allUserFiles = await fetcherFactory.Create(userId).FetchPaintFilesAsync();
+                var allUserFiles = await fetcherFactory.Create(user.UserId)
+                    .FetchPaintFilesAsync();
 
-                var userFiles = allUserFiles
-                    .Where(f =>
-                        f.Id.Type is PaintType.Helmet or PaintType.Suit
-                        || string.Equals(
-                            f.Id.Directory,
-                            user.Directory,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                    )
-                    .ToList();
-
-                logger.LogInformation(
-                    "Downloading {Count} files for User {UserId}",
-                    userFiles.Count,
-                    userId
-                );
-
-                var fileTasks = new List<Task<DownloadedFile?>>();
-                foreach (var file in userFiles)
-                {
-                    var task = DownloadPaintToTempDirectory(session.Id, file.Id, new Uri(file.Url));
-                    fileTasks.Add(task);
-                }
-                var files = await Task.WhenAll(fileTasks);
-                downloadedFiles.AddRange(files.OfType<DownloadedFile>());
+                files.AddRange(allUserFiles.Where(f =>
+                    f.Id.Type is PaintType.Helmet or PaintType.Suit
+                    || string.Equals(f.Id.Directory, user.Directory, StringComparison.OrdinalIgnoreCase)
+                ));
             }
 
-            return downloadedFiles;
+            return files;
         }
+
+        private List<DownloadFile> FetchTeamSessionFiles(Session session) => [];
 
         private async Task<DownloadedFile?> DownloadPaintToTempDirectory(
             Session.SessionId sessionId,
