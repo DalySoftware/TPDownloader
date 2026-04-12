@@ -3,17 +3,14 @@ using Microsoft.Extensions.Logging;
 
 namespace TPDownloader.TradingPaints;
 
-internal class TradingPaintsFetcherFactory(
-    HttpClient httpClient,
-    ILogger<TradingPaintsFetcher> logger
-)
+internal class TradingPaintsUserFetcherFactory(HttpClient httpClient, ILogger<TradingPaintsUserFetcher> logger)
 {
-    internal TradingPaintsFetcher Create(int userId) => new(httpClient, logger, userId);
+    internal TradingPaintsUserFetcher Create(int userId) => new(httpClient, logger, userId);
 }
 
-internal class TradingPaintsFetcher(
+internal class TradingPaintsUserFetcher(
     HttpClient httpClient,
-    ILogger<TradingPaintsFetcher> logger,
+    ILogger<TradingPaintsUserFetcher> logger,
     int userId
 )
 {
@@ -67,7 +64,7 @@ internal class TradingPaintsFetcher(
         return new DownloadFile(downloadId, fileUrl);
     }
 
-    private static PaintType ToPaintType(string type) =>
+    internal static PaintType ToPaintType(string type) =>
         type.ToLowerInvariant() switch
         {
             "car" => PaintType.Car,

@@ -29,7 +29,7 @@ internal static class Program
             };
             var host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(
-                    (context, config) =>
+                    (_, config) =>
                     {
                         config.AddInMemoryCollection(defaultConfig);
                         config.AddJsonFile("appsettings.json", optional: true);
@@ -50,7 +50,8 @@ internal static class Program
                         .AddTransient<SessionInfoParser>()
                         .AddTransient<IRacingSDK>();
 
-                    services.AddHttpClient<TradingPaintsFetcherFactory>();
+                    services.AddHttpClient<TradingPaintsUserFetcherFactory>();
+                    services.AddHttpClient<TradingPaintsTeamFetcher>();
                     services.AddHttpClient<SessionDownloader>();
                 })
                 .Build();

@@ -5,7 +5,8 @@ namespace TPDownloader.TradingPaints
     internal class SessionDownloader(
         ILogger<SessionDownloader> logger,
         HttpClient httpClient,
-        TradingPaintsFetcherFactory fetcherFactory
+        TradingPaintsUserFetcherFactory userFetcherFactory,
+        TradingPaintsTeamFetcher teamFetcher
     )
     {
         internal async Task<IEnumerable<DownloadedFile>> DownloadSession(Session session)
@@ -39,7 +40,9 @@ namespace TPDownloader.TradingPaints
         }
         
         private async Task<List<DownloadFile>> FetchSessionFiles(Session session) => 
-            session.TeamRacing ? FetchTeamSessionFiles(session) : await FetchIndividualSessionFiles(session);
+            session.TeamRacing 
+                ? await teamFetcher.FetchSession(session)
+                : await FetchIndividualSessionFiles(session);
 
         private async Task<List<DownloadFile>> FetchIndividualSessionFiles(Session session)
         {
@@ -47,7 +50,7 @@ namespace TPDownloader.TradingPaints
 
             foreach (var user in session.Users)
             {
-                var allUserFiles = await fetcherFactory.Create(user.UserId)
+                var allUserFiles = await userFetcherFactory.Create(user.UserId)
                     .FetchPaintFilesAsync();
 
                 files.AddRange(allUserFiles.Where(f =>
@@ -58,8 +61,6 @@ namespace TPDownloader.TradingPaints
 
             return files;
         }
-
-        private List<DownloadFile> FetchTeamSessionFiles(Session session) => [];
 
         private async Task<DownloadedFile?> DownloadPaintToTempDirectory(
             Session.SessionId sessionId,

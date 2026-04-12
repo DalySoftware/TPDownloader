@@ -26,7 +26,18 @@ internal class SessionInfoParser
             .ToHashSet();
 
         var teamRacing = GetTeamRacing(weekendInfo);
-        return new Session(sessionId, cars, teamRacing);
+        var seriesId = GetInt(weekendInfo, "SeriesID");
+        var leagueId = GetInt(weekendInfo, "LeagueID");
+        var userId = GetDriverUserId(yamlStream);
+        return new Session(sessionId, cars, teamRacing, seriesId, leagueId, userId);
+    }
+    
+    private static int GetInt(YamlMappingNode node, string key)
+    {
+        return node.Children.TryGetValue(key, out var value) &&
+               int.TryParse(value.ToString(), out var result)
+            ? result
+            : 0;
     }
     
     private static YamlMappingNode? GetWeekendInfo(YamlStream yamlStream)
@@ -93,4 +104,16 @@ internal class SessionInfoParser
 
     private static string GetCarNumber(YamlMappingNode driver) =>
         driver.Children.TryGetValue("CarNumber", out var node) ? node.ToString() : string.Empty;
+    
+    private static int GetDriverUserId(YamlStream yamlStream)
+    {
+        var root = yamlStream.Documents.FirstOrDefault()?.RootNode as YamlMappingNode;
+        if (root == null ||
+            !root.Children.TryGetValue("DriverInfo", out var driverNode) ||
+            driverNode is not YamlMappingNode driverInfo ||
+            !driverInfo.Children.TryGetValue("DriverCarIdx", out var idxNode))
+            return 0;
+
+        return int.TryParse(idxNode.ToString(), out var id) ? id : 0;
+    }
 }
