@@ -9,8 +9,12 @@ internal class SessionInfoParser
         var yamlStream = new YamlStream();
         using var reader = new StringReader(yaml);
         yamlStream.Load(reader);
+        
+        var weekendInfo = GetWeekendInfo(yamlStream);
+        if (weekendInfo == null)
+            return null;
 
-        var sessionId = GetSessionId(yamlStream);
+        var sessionId = GetSessionId(weekendInfo);
         if (sessionId == null)
             return null;
 
@@ -21,25 +25,39 @@ internal class SessionInfoParser
             .Where(car => car.UserId > 0)
             .ToHashSet();
 
-        return new Session(sessionId, cars);
+        var teamRacing = GetTeamRacing(weekendInfo);
+        return new Session(sessionId, cars, teamRacing);
+    }
+    
+    private static YamlMappingNode? GetWeekendInfo(YamlStream yamlStream)
+    {
+        var root = yamlStream.Documents.FirstOrDefault()?.RootNode as YamlMappingNode;
+        if (root == null)
+            return null;
+
+        return root.Children.TryGetValue("WeekendInfo", out var node)
+            ? node as YamlMappingNode
+            : null;
     }
 
-    private static Session.SessionId? GetSessionId(YamlStream yamlStream)
+    private static bool GetTeamRacing(YamlMappingNode weekend)
+    {
+        return weekend.Children.TryGetValue("TeamRacing", out var node)
+               && int.TryParse(node.ToString(), out var value)
+               && value == 1;
+    }
+
+    private static Session.SessionId? GetSessionId(YamlMappingNode weekend)
     {
         if (
-            yamlStream.Documents.FirstOrDefault()?.RootNode is not YamlMappingNode root
-            || !root.Children.TryGetValue("WeekendInfo", out var weekendInfoNode)
-            || weekendInfoNode is not YamlMappingNode weekendInfo
-            || !weekendInfo.Children.TryGetValue("SessionID", out var sessionIdNode)
-            || !int.TryParse(sessionIdNode.ToString(), out int mainSessionId)
+            !weekend.Children.TryGetValue("SessionID", out var sessionIdNode) ||
+            !int.TryParse(sessionIdNode.ToString(), out var mainSessionId)
         )
-        {
             return null;
-        }
 
         int? subSessionId =
-            weekendInfo.Children.TryGetValue("SubSessionID", out var subSessionIdNode)
-            && int.TryParse(subSessionIdNode.ToString(), out int parsedSubSessionId)
+            weekend.Children.TryGetValue("SubSessionID", out var subSessionIdNode)
+            && int.TryParse(subSessionIdNode.ToString(), out var parsedSubSessionId)
                 ? parsedSubSessionId
                 : null;
 

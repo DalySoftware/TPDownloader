@@ -1,6 +1,6 @@
 namespace TPDownloader;
 
-internal record Session(Session.SessionId Id, HashSet<Session.User> Users)
+internal record Session(Session.SessionId Id, HashSet<Session.User> Users, bool TeamRacing)
 {
     internal record SessionId(int MainSessionId, int? SubSessionId);
 
