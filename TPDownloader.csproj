@@ -8,6 +8,7 @@
     <PublishSingleFile Condition="'$(RuntimeIdentifier)' != ''">true</PublishSingleFile>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationIcon>UI\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="irsdkSharp" Version="0.9.0" />
