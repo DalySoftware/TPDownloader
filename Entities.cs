@@ -4,7 +4,7 @@ internal record Session(Session.SessionId Id, HashSet<Session.User> Users)
 {
     internal record SessionId(int MainSessionId, int? SubSessionId);
 
-    internal record User(int UserId, string Directory);
+    internal record User(int UserId, int TeamId, string Directory, string CarNumber);
 }
 
 internal record DownloadId(int UserId, string Directory, PaintType Type);

@@ -63,8 +63,16 @@ internal class SessionInfoParser
 
     private static Session.User? ToCarInfo(YamlMappingNode driver) =>
         driver.Children.TryGetValue("UserID", out var userIdNode)
-        && int.TryParse(userIdNode.ToString(), out int userId)
+        && int.TryParse(userIdNode.ToString(), out var userId)
         && driver.Children.TryGetValue("CarPath", out var carPathNode)
-            ? new Session.User(userId, carPathNode.ToString())
+            ? new Session.User(userId, GetTeamId(driver), carPathNode.ToString(), GetCarNumber(driver))
             : null;
+
+    private static int GetTeamId(YamlMappingNode driver) =>
+        driver.Children.TryGetValue("TeamID", out var teamIdNode)
+        && int.TryParse(teamIdNode.ToString(), out var teamId)
+            ? teamId : 0; // 0 is also used for safety car
+
+    private static string GetCarNumber(YamlMappingNode driver) =>
+        driver.Children.TryGetValue("CarNumber", out var node) ? node.ToString() : string.Empty;
 }
