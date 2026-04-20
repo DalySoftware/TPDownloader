@@ -7,7 +7,7 @@ internal class SessionInfoParser
     internal Session? GetSessionInfo(string yaml)
     {
         var yamlStream = new YamlStream();
-        using var reader = new StringReader(yaml);
+        using var reader = new StringReader(SanitizeYaml(yaml));
         yamlStream.Load(reader);
         
         var weekendInfo = GetWeekendInfo(yamlStream);
@@ -30,6 +30,24 @@ internal class SessionInfoParser
         var leagueId = GetInt(weekendInfo, "LeagueID");
         var userId = GetDriverUserId(yamlStream);
         return new Session(sessionId, cars, teamRacing, seriesId, leagueId, userId);
+    }
+
+    private static string SanitizeYaml(string input) => string.Join('\n', input.Split('\n').Select(FixLine));
+
+    private static string FixLine(string line)
+    {
+        var colonIndex = line.IndexOf(':');
+        if (colonIndex < 0)
+            return line;
+
+        var keyWithColon = line[..(colonIndex + 1)];
+        var valuePart = line[(colonIndex + 1)..].Trim();
+
+        return valuePart switch
+        {
+            "," => $"{keyWithColon} null",
+            _ => line,
+        };
     }
     
     private static int GetInt(YamlMappingNode node, string key)
