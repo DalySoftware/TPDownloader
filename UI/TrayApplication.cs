@@ -2,7 +2,11 @@ using System.Reflection;
 
 namespace TPDownloader.UI;
 
-internal class TrayApplication(MainForm mainForm, PaintService paintService) : IDisposable
+internal class TrayApplication(
+    MainForm mainForm,
+    PaintService paintService,
+    SshTunnelService sshTunnelService
+) : IDisposable
 {
     private NotifyIcon? _trayIcon;
     private bool _isDisposed;
@@ -11,6 +15,7 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
 
     public void Run()
     {
+        sshTunnelService.StartIfConfigured();
         _paintServiceCts = new CancellationTokenSource();
 
         // Start and *observe* faults
@@ -25,9 +30,11 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
             Text = "TP Downloader",
         };
         mainForm.Icon = appIcon;
+        mainForm.ProxySettingsRequested += (_, _) => ShowProxySettings();
 
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("Show", null, (_, __) => ShowWindow());
+        contextMenu.Items.Add("Proxy Settings...", null, (_, __) => ShowProxySettings());
         contextMenu.Items.Add("Exit", null, (_, __) => ExitApp());
         _trayIcon.ContextMenuStrip = contextMenu;
         _trayIcon.DoubleClick += (_, __) => ShowWindow();
@@ -78,10 +85,25 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         mainForm.Activate();
     }
 
+    private void ShowProxySettings()
+    {
+        using var settingsForm = new ProxySettingsForm();
+        if (settingsForm.ShowDialog(mainForm) != DialogResult.OK)
+            return;
+
+        MessageBox.Show(
+            "Proxy settings were saved. Restart TPDownloader to apply the new network settings.",
+            "TP Downloader",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information
+        );
+    }
+
     private void ExitApp()
     {
         _paintServiceCts?.Cancel();
         paintService.Dispose();
+        sshTunnelService.Dispose();
 
         if (_trayIcon is not null)
             _trayIcon.Visible = false;
@@ -95,6 +117,7 @@ internal class TrayApplication(MainForm mainForm, PaintService paintService) : I
         {
             _paintServiceCts?.Cancel();
             paintService.Dispose();
+            sshTunnelService.Dispose();
 
             _trayIcon?.Dispose();
             mainForm?.Dispose();
