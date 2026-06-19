@@ -8,10 +8,23 @@ internal class MainForm : Form
     private readonly List<(string Message, Color Color)> _logEntries = [];
     private readonly ListBox _logListBox = new() { Dock = DockStyle.Fill };
 
+    public event EventHandler? ProxySettingsRequested;
+
     public MainForm()
     {
         Text = "TPDownloader Log";
+        var menuStrip = new MenuStrip();
+        var settingsMenu = new ToolStripMenuItem("Settings");
+        settingsMenu.DropDownItems.Add(
+            "Proxy Settings...",
+            null,
+            (_, _) => ProxySettingsRequested?.Invoke(this, EventArgs.Empty)
+        );
+        menuStrip.Items.Add(settingsMenu);
+
+        MainMenuStrip = menuStrip;
         Controls.Add(_logListBox);
+        Controls.Add(menuStrip);
         Width = 1000;
         Height = 600;
         _logListBox.DrawMode = DrawMode.OwnerDrawFixed;
